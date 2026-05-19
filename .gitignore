@@ -3,6 +3,9 @@
 .vscode/
 *.swp
 *.swo
+*.suo
+*.user
+*.sln
 
 # Python
 venv/
@@ -18,6 +21,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+*.whl
 
 # Django
 *.log
@@ -25,21 +29,42 @@ db.sqlite3
 db.sqlite4
 *.sqlite3
 *.sqlite
+*.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# PostgreSQL
+*.pgdata
+*.pgdump
 
 # OS
 .DS_Store
 Thumbs.db
 desktop.ini
+ehthumbs.db
+*.swp
 
 # Virtual Environment
 venv/
 env/
 ENV/
-
-# Environment variables
-.env
-.env.local
+.venv/
 
 # Coverage reports
 .coverage
 htmlcov/
+.tox/
+.coverage.*
+coverage.xml
+
+# Media files
+media/
+staticfiles/
+
+# Secret files
+*.pem
+*.key
+*.crt

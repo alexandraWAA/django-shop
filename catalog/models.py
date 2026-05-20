@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 
 class Category(models.Model):
@@ -24,6 +25,9 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('catalog:category_products', args=[self.pk])
 
 
 class Product(models.Model):
@@ -77,3 +81,12 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.name} (${self.price})"
+
+    def get_absolute_url(self):
+        return reverse('catalog:product_detail', args=[self.pk])
+
+    def get_short_description(self, length=100):
+        """Возвращает обрезанное описание"""
+        if len(self.description) > length:
+            return self.description[:length] + '...'
+        return self.description

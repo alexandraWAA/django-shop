@@ -4,20 +4,15 @@ from catalog.models import Category, Product
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    """
-    Настройка отображения категорий в админке
-    """
     list_display = ('id', 'name', 'description')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
+    prepopulated_fields = {'slug': ('name',)} if 'slug' in [f.name for f in Category._meta.get_fields()] else {}
     ordering = ('id',)
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    """
-    Настройка отображения продуктов в админке
-    """
     list_display = ('id', 'name', 'price', 'category', 'created_at')
     list_display_links = ('id', 'name')
     list_filter = ('category', 'created_at', 'updated_at')

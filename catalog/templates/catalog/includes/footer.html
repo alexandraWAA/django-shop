@@ -1,0 +1,28 @@
+<!-- Подвал сайта -->
+<footer class="pt-4 my-md-5 pt-md-5 border-top footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md">
+                <h5>SkyStore</h5>
+                <small class="d-block mb-3 text-muted">&copy; 2026</small>
+            </div>
+            <div class="col-6 col-md">
+                <h5>Категории</h5>
+                <ul class="list-unstyled text-small">
+                    {% load catalog_tags %}
+                    {% get_categories as categories %}
+                    {% for category in categories|slice:":5" %}
+                        <li><a class="text-muted text-decoration-none" href="{% url 'catalog:category_products' category.pk %}">{{ category.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-6 col-md">
+                <h5>О нас</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted text-decoration-none" href="{% url 'catalog:contacts' %}">Контакты</a></li>
+                    <li><a class="text-muted text-decoration-none" href="{% url 'catalog:product_create' %}">Добавить товар</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</footer>

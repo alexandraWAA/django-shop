@@ -1,0 +1,42 @@
+[
+  {
+    "model": "catalog.category",
+    "pk": 1,
+    "fields": {
+      "name": "Электроника",
+      "description": "Смартфоны, ноутбуки, планшеты и другая техника"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 2,
+    "fields": {
+      "name": "Одежда",
+      "description": "Мужская, женская и детская одежда"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 3,
+    "fields": {
+      "name": "Дом и сад",
+      "description": "Товары для дома, сада и дачи"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 4,
+    "fields": {
+      "name": "Спорт",
+      "description": "Спортивный инвентарь и экипировка"
+    }
+  },
+  {
+    "model": "catalog.category",
+    "pk": 5,
+    "fields": {
+      "name": "Книги",
+      "description": "Художественная и учебная литература"
+    }
+  }
+]

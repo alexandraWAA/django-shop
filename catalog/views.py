@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from catalog.models import Product
 
 
 def home(request):
@@ -6,40 +7,21 @@ def home(request):
     Контроллер главной страницы.
     Рендерит шаблон home.html функцией render()
     """
+    # * Дополнительное задание: выборка последних 5 созданных продуктов
+    recent_products = Product.objects.all().order_by('-created_at')[:5]
+
+    # Вывод в консоль последних 5 продуктов
+    print("\n" + "=" * 60)
+    print("📦 ПОСЛЕДНИЕ 5 СОЗДАННЫХ ПРОДУКТОВ:")
+    print("=" * 60)
+    for idx, product in enumerate(recent_products, 1):
+        print(
+            f"{idx}. {product.name} - ${product.price} (Категория: {product.category.name if product.category else 'Без категории'})")
+    print("=" * 60 + "\n")
+
     context = {
         'title': 'Skystore - Главная',
-        'products': [
-            {
-                'name': 'Удобный сервис рассылок',
-                'price': 140,
-                'features': [
-                    'Неограниченная лицензия',
-                    'Поддержка',
-                    'Установка на сервер',
-                    'Получение обновлений'
-                ]
-            },
-            {
-                'name': 'Телеграм бот',
-                'price': 100,
-                'features': [
-                    'Готовый код',
-                    'Документация',
-                    'Поддержка 24/7',
-                    'Обновления 1 год'
-                ]
-            },
-            {
-                'name': 'Веб-приложение',
-                'price': 200,
-                'features': [
-                    'Полный исходный код',
-                    'Деплой на сервер',
-                    'Интеграция с БД',
-                    'Бесплатные обновления'
-                ]
-            },
-        ]
+        'products': recent_products,
     }
     return render(request, 'catalog/home.html', context)
 

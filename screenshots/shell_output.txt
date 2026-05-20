@@ -1,0 +1,120 @@
+============================================================
+СКРИНШОТ 1: Импорт моделей и создание категорий
+============================================================
+>>> from catalog.models import Category, Product
+>>>
+>>> cat1 = Category.objects.create(name='Электроника', description='Смартфоны, ноутбуки, планшеты')
+>>> cat2 = Category.objects.create(name='Одежда', description='Мужская и женская одежда')
+>>> cat3 = Category.objects.create(name='Дом и сад', description='Товары для дома и дачи')
+>>>
+>>> print("✅ Категории созданы:")
+✅ Категории созданы:
+>>> print(Category.objects.all())
+<QuerySet [<Category: Электроника>, <Category: Одежда>, <Category: Дом и сад>]>
+
+============================================================
+СКРИНШОТ 2: Создание продуктов
+============================================================
+>>> electronics = Category.objects.get(name='Электроника')
+>>> clothing = Category.objects.get(name='Одежда')
+>>>
+>>> product1 = Product.objects.create(
+...     name='iPhone 15 Pro',
+...     description='Флагманский смартфон Apple',
+...     price=999.00,
+...     category=electronics
+... )
+>>>
+>>> product2 = Product.objects.create(
+...     name='Samsung Galaxy S24',
+...     description='Мощный Android-смартфон',
+...     price=899.00,
+...     category=electronics
+... )
+>>>
+>>> product3 = Product.objects.create(
+...     name='Джинсы классические',
+...     description='Удобные джинсы из хлопка',
+...     price=79.99,
+...     category=clothing
+... )
+>>>
+>>> print("✅ Продукты созданы:")
+✅ Продукты созданы:
+>>> print(Product.objects.all())
+<QuerySet [<Product: iPhone 15 Pro ($999.00)>, <Product: Samsung Galaxy S24 ($899.00)>, <Product: Джинсы классические ($79.99)>]>
+
+============================================================
+СКРИНШОТ 3: Получение всех категорий
+============================================================
+>>> all_categories = Category.objects.all()
+>>> print("=" * 50)
+==================================================
+>>> print("ВСЕ КАТЕГОРИИ:")
+ВСЕ КАТЕГОРИИ:
+>>> print("=" * 50)
+==================================================
+>>> for cat in all_categories:
+...     print(f"ID: {cat.id} | Название: {cat.name}")
+...
+ID: 1 | Название: Электроника
+ID: 2 | Название: Одежда
+ID: 3 | Название: Дом и сад
+
+============================================================
+СКРИНШОТ 4: Получение всех продуктов
+============================================================
+>>> all_products = Product.objects.all()
+>>> print("=" * 50)
+==================================================
+>>> print("ВСЕ ПРОДУКТЫ:")
+ВСЕ ПРОДУКТЫ:
+>>> print("=" * 50)
+==================================================
+>>> for prod in all_products:
+...     print(f"ID: {prod.id} | {prod.name} - ${prod.price} | Категория: {prod.category}")
+...
+ID: 1 | iPhone 15 Pro - $999.00 | Категория: Электроника
+ID: 2 | Samsung Galaxy S24 - $899.00 | Категория: Электроника
+ID: 3 | Джинсы классические - $79.99 | Категория: Одежда
+
+============================================================
+СКРИНШОТ 5: Поиск продуктов в категории "Электроника"
+============================================================
+>>> electronics_products = Product.objects.filter(category__name='Электроника')
+>>> print("ПРОДУКТЫ В КАТЕГОРИИ 'ЭЛЕКТРОНИКА':")
+ПРОДУКТЫ В КАТЕГОРИИ 'ЭЛЕКТРОНИКА':
+>>> for prod in electronics_products:
+...     print(f"• {prod.name} - ${prod.price}")
+...
+• iPhone 15 Pro - $999.00
+• Samsung Galaxy S24 - $899.00
+
+============================================================
+СКРИНШОТ 6: Обновление цены продукта
+============================================================
+>>> product_to_update = Product.objects.get(name='iPhone 15 Pro')
+>>> print(f"До: {product_to_update.name} = ${product_to_update.price}")
+До: iPhone 15 Pro = $999.00
+>>> product_to_update.price = 849.00
+>>> product_to_update.save()
+>>> product_updated = Product.objects.get(name='iPhone 15 Pro')
+>>> print(f"После: {product_updated.name} = ${product_updated.price}")
+После: iPhone 15 Pro = $849.00
+
+============================================================
+СКРИНШОТ 7: Удаление продукта
+============================================================
+>>> product_to_delete = Product.objects.get(name='Samsung Galaxy S24')
+>>> print(f"Удаляем: {product_to_delete.name}")
+Удаляем: Samsung Galaxy S24
+>>> product_to_delete.delete()
+(1, {'catalog.Product': 1})
+>>> remaining = Product.objects.all()
+>>> print(f"Осталось продуктов: {remaining.count()}")
+Осталось продуктов: 2
+>>> for prod in remaining:
+...     print(f"• {prod.name} - ${prod.price}")
+...
+• iPhone 15 Pro - $849.00
+• Джинсы классические - $79.99

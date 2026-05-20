@@ -6,6 +6,7 @@
 *.suo
 *.user
 *.sln
+.DS_Store
 
 # Python
 venv/
@@ -40,26 +41,6 @@ db.sqlite4
 *.pgdata
 *.pgdump
 
-# OS
-.DS_Store
-Thumbs.db
-desktop.ini
-ehthumbs.db
-*.swp
-
-# Virtual Environment
-venv/
-env/
-ENV/
-.venv/
-
-# Coverage reports
-.coverage
-htmlcov/
-.tox/
-.coverage.*
-coverage.xml
-
 # Media files
 media/
 staticfiles/
@@ -68,3 +49,10 @@ staticfiles/
 *.pem
 *.key
 *.crt
+
+# Coverage reports
+.coverage
+htmlcov/
+.tox/
+.coverage.*
+coverage.xml

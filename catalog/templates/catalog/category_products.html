@@ -1,0 +1,55 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'catalog:home' %}">Главная</a></li>
+            <li class="breadcrumb-item active">{{ category.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="display-5">{{ category.name }}</h1>
+            {% if category.description %}
+                <p class="lead">{{ category.description }}</p>
+            {% endif %}
+        </div>
+        <span class="badge bg-primary fs-6">{{ products|length }} товаров</span>
+    </div>
+</div>
+
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 product-card">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top product-image" alt="{{ product.name }}">
+            {% else %}
+                <div class="card-img-top product-image bg-light d-flex align-items-center justify-content-center">
+                    <span class="text-muted">Нет изображения</span>
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description|truncatechars:100 }}</p>
+                <h4 class="text-primary">$ {{ product.price }}</h4>
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-outline-primary w-100">Подробнее →</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <h4>В этой категории пока нет товаров</h4>
+            <a href="{% url 'catalog:product_create' %}" class="btn btn-primary mt-2">Добавить товар</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

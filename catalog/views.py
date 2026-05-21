@@ -1,57 +1,93 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.core.paginator import Paginator
+from django.views.generic import ListView, DetailView, CreateView, TemplateView
+from django.urls import reverse_lazy
 from django.contrib import messages
 from catalog.models import Product, Category
 from catalog.forms import ProductForm
 
 
-def home(request):
+class HomeListView(ListView):
     """
-    Контроллер главной страницы со списком товаров и пагинацией
+    Контроллер главной страницы со списком товаров (CBV)
     """
-    # Получаем все продукты
-    products_list = Product.objects.select_related('category').all()
+    model = Product
+    template_name = 'catalog/home.html'
+    context_object_name = 'products'
+    paginate_by = 6
 
-    # Пагинация (дополнительное задание)
-    paginator = Paginator(products_list, 6)  # 6 товаров на странице
-    page_number = request.GET.get('page', 1)
-    products = paginator.get_page(page_number)
+    def get_queryset(self):
+        """Возвращает все продукты с предзагрузкой категории"""
+        return Product.objects.select_related('category').all()
 
-    context = {
-        'title': 'Skystore - Главная',
-        'products': products,
-        'paginator': paginator,
-    }
-    return render(request, 'catalog/home.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Skystore - Главная'
+        return context
 
 
-def product_detail(request, pk):
+class ProductDetailView(DetailView):
     """
-    Контроллер страницы подробной информации о товаре
+    Контроллер страницы подробной информации о товаре (CBV)
     URL вида /products/int:pk/
     """
-    # Извлекаем объект через ORM
-    product = get_object_or_404(Product, pk=pk)
+    model = Product
+    template_name = 'catalog/product_detail.html'
+    context_object_name = 'product'
 
-    context = {
-        'title': product.name,
-        'product': product,
-    }
-    return render(request, 'catalog/product_detail.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = self.object.name
+        # Похожие товары из той же категории
+        if self.object.category:
+            context['similar_products'] = self.object.category.products.exclude(
+                id=self.object.id
+            )[:3]
+        return context
 
 
-def contacts(request):
+class ProductCreateView(CreateView):
     """
-    Контроллер страницы контактов
+    Контроллер для добавления нового товара (CBV)
     """
-    message_sent = False
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_create.html'
+    success_url = reverse_lazy('catalog:home')
 
-    if request.method == 'POST':
+    def form_valid(self, form):
+        """Добавляем сообщение об успехе"""
+        response = super().form_valid(form)
+        messages.success(self.request, f'Товар "{self.object.name}" успешно добавлен!')
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Добавить товар'
+        return context
+
+
+class ContactsView(TemplateView):
+    """
+    Контроллер страницы контактов (CBV с TemplateView)
+    """
+    template_name = 'catalog/contacts.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Skystore - Контакты'
+        context['message_sent'] = False
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Обработка POST-запроса из формы"""
+        context = self.get_context_data(**kwargs)
+
+        # Получаем данные из формы
         name = request.POST.get('name', '')
         phone = request.POST.get('phone', '')
         email = request.POST.get('email', '')
         message = request.POST.get('message', '')
 
+        # Выводим в консоль
         print("\n" + "=" * 50)
         print("📬 Получены данные от пользователя:")
         print(f"   Имя: {name}")
@@ -60,47 +96,25 @@ def contacts(request):
         print(f"   Сообщение: {message}")
         print("=" * 50 + "\n")
 
-        message_sent = True
-
-    context = {
-        'title': 'Skystore - Контакты',
-        'message_sent': message_sent,
-    }
-    return render(request, 'catalog/contacts.html', context)
+        context['message_sent'] = True
+        return self.render_to_response(context)
 
 
-def product_create(request):
+class CategoryProductsView(ListView):
     """
-    Контроллер для добавления нового товара (дополнительное задание)
+    Контроллер для отображения товаров по категории (CBV)
     """
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save()
-            messages.success(request, f'Товар "{product.name}" успешно добавлен!')
-            return redirect('catalog:product_detail', pk=product.pk)
-        else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
-    else:
-        form = ProductForm()
+    model = Product
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
 
-    context = {
-        'title': 'Добавить товар',
-        'form': form,
-    }
-    return render(request, 'catalog/product_create.html', context)
+    def get_queryset(self):
+        """Фильтруем продукты по категории"""
+        self.category = Category.objects.get(pk=self.kwargs['pk'])
+        return self.category.products.all()
 
-
-def category_products(request, pk):
-    """
-    Контроллер для отображения товаров по категории
-    """
-    category = get_object_or_404(Category, pk=pk)
-    products = category.products.all()
-
-    context = {
-        'title': f'Категория: {category.name}',
-        'category': category,
-        'products': products,
-    }
-    return render(request, 'catalog/category_products.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        context['title'] = f'Категория: {self.category.name}'
+        return context

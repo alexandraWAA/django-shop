@@ -1,0 +1,38 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'catalog:home' %}">Главная</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'blog:blog_list' %}">Блог</a></li>
+        <li class="breadcrumb-item active">{{ blog_post.title }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="display-5">{{ blog_post.title }}</h1>
+        <p class="text-muted">
+            📅 {{ blog_post.created_at|date:"d.m.Y H:i" }} |
+            👁️ {{ blog_post.views_count }} просмотров
+        </p>
+        <hr>
+        <div class="blog-content">
+            {{ blog_post.content|linebreaks }}
+        </div>
+        <hr>
+        <div class="mt-4">
+            <a href="{% url 'blog:blog_list' %}" class="btn btn-outline-secondary">← Назад к списку</a>
+            <a href="{% url 'blog:blog_update' blog_post.pk %}" class="btn btn-outline-primary">✏️ Редактировать</a>
+            <a href="{% url 'blog:blog_delete' blog_post.pk %}" class="btn btn-outline-danger">🗑️ Удалить</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        {% if blog_post.preview %}
+            <img src="{{ blog_post.preview.url }}" class="img-fluid rounded shadow" alt="{{ blog_post.title }}">
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

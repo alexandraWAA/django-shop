@@ -5,8 +5,10 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # Подключаем URL-адреса приложения catalog
+    # Приложение catalog
     path('', include('catalog.urls')),
+    # Приложение blog (все URL начинаются с blogs/)
+    path('blogs/', include('blog.urls')),
 ]
 
 # Добавляем поддержку медиафайлов в режиме отладки

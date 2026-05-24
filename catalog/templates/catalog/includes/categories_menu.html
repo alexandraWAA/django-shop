@@ -1,0 +1,5 @@
+{% for category in categories %}
+    <li><a class="text-muted text-decoration-none" href="{% url 'catalog:category_products' category.pk %}">{{ category.name }}</a></li>
+{% empty %}
+    <li class="text-muted">Нет категорий</li>
+{% endfor %}

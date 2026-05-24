@@ -11,8 +11,10 @@
                 <ul class="list-unstyled text-small">
                     {% load catalog_tags %}
                     {% get_categories as categories %}
-                    {% for category in categories|slice:":5" %}
+                    {% for category in categories %}
                         <li><a class="text-muted text-decoration-none" href="{% url 'catalog:category_products' category.pk %}">{{ category.name }}</a></li>
+                    {% empty %}
+                        <li class="text-muted">Нет категорий</li>
                     {% endfor %}
                 </ul>
             </div>

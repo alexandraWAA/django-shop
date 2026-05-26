@@ -46,7 +46,7 @@ class Product(models.Model):
     image = models.ImageField(
         upload_to='products/',
         verbose_name='изображение',
-        help_text='Загрузите изображение товара',
+        help_text='Загрузите изображение товара (JPEG, PNG, до 5 МБ)',
         blank=True,
         null=True
     )
@@ -63,7 +63,7 @@ class Product(models.Model):
         max_digits=10,
         decimal_places=2,
         verbose_name='цена за покупку',
-        help_text='Введите цену товара'
+        help_text='Введите цену товара (должна быть больше 0)'
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -84,9 +84,3 @@ class Product(models.Model):
 
     def get_absolute_url(self):
         return reverse('catalog:product_detail', args=[self.pk])
-
-    def get_short_description(self, length=100):
-        """Возвращает обрезанное описание"""
-        if len(self.description) > length:
-            return self.description[:length] + '...'
-        return self.description

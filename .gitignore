@@ -3,9 +3,7 @@
 .vscode/
 *.swp
 *.swo
-*.suo
-*.user
-*.sln
+.idea/
 .DS_Store
 
 # Python

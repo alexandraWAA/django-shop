@@ -1,7 +1,6 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
 from django.contrib import messages
-from django.shortcuts import redirect
 from catalog.models import Product, Category
 from catalog.forms import ProductForm
 
@@ -21,12 +20,13 @@ class HomeListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Skystore - Главная'
+        context['categories'] = Category.objects.all()
         return context
 
 
 class ProductDetailView(DetailView):
     """
-    Детальная страница товара (READ)
+    Детальная страница товара
     """
     model = Product
     template_name = 'catalog/product_detail.html'
@@ -39,12 +39,13 @@ class ProductDetailView(DetailView):
             context['similar_products'] = self.object.category.products.exclude(
                 id=self.object.id
             )[:3]
+        context['categories'] = Category.objects.all()
         return context
 
 
 class ProductCreateView(CreateView):
     """
-    Создание нового товара (CREATE)
+    Создание нового товара
     """
     model = Product
     form_class = ProductForm
@@ -53,10 +54,7 @@ class ProductCreateView(CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(
-            self.request,
-            f'✅ Товар "{self.object.name}" успешно создан!'
-        )
+        messages.success(self.request, f'✅ Товар "{self.object.name}" успешно создан!')
         return response
 
     def form_invalid(self, form):
@@ -69,12 +67,13 @@ class ProductCreateView(CreateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Добавление товара'
         context['button_text'] = 'Создать товар'
+        context['categories'] = Category.objects.all()
         return context
 
 
 class ProductUpdateView(UpdateView):
     """
-    Редактирование товара (UPDATE)
+    Редактирование товара
     """
     model = Product
     form_class = ProductForm
@@ -85,10 +84,7 @@ class ProductUpdateView(UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(
-            self.request,
-            f'✅ Товар "{self.object.name}" успешно обновлен!'
-        )
+        messages.success(self.request, f'✅ Товар "{self.object.name}" успешно обновлен!')
         return response
 
     def form_invalid(self, form):
@@ -101,12 +97,13 @@ class ProductUpdateView(UpdateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Редактирование товара'
         context['button_text'] = 'Сохранить изменения'
+        context['categories'] = Category.objects.all()
         return context
 
 
 class ProductDeleteView(DeleteView):
     """
-    Удаление товара (DELETE)
+    Удаление товара
     """
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
@@ -116,6 +113,11 @@ class ProductDeleteView(DeleteView):
         obj = self.get_object()
         messages.success(request, f'✅ Товар "{obj.name}" успешно удален!')
         return super().delete(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+        return context
 
 
 class ContactsView(TemplateView):
@@ -128,6 +130,7 @@ class ContactsView(TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Skystore - Контакты'
         context['message_sent'] = False
+        context['categories'] = Category.objects.all()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -166,4 +169,5 @@ class CategoryProductsView(ListView):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
         context['title'] = f'Категория: {self.category.name}'
+        context['categories'] = Category.objects.all()
         return context

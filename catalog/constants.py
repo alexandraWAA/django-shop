@@ -1,6 +1,4 @@
-"""
-Константы для приложения catalog
-"""
+# catalog/constants.py
 
 # Список запрещенных слов (в любом регистре)
 FORBIDDEN_WORDS = [
@@ -14,10 +12,3 @@ FORBIDDEN_WORDS = [
     'полиция',
     'радар',
 ]
-
-# Максимальный размер изображения (5 МБ)
-MAX_IMAGE_SIZE_MB = 5
-MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024
-
-# Допустимые форматы изображений
-ALLOWED_IMAGE_FORMATS = ['JPEG', 'PNG', 'JPG']

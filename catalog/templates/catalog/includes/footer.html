@@ -9,8 +9,6 @@
             <div class="col-6 col-md">
                 <h5>Категории</h5>
                 <ul class="list-unstyled text-small">
-                    {% load catalog_tags %}
-                    {% get_categories as categories %}
                     {% for category in categories %}
                         <li><a class="text-muted text-decoration-none" href="{% url 'catalog:category_products' category.pk %}">{{ category.name }}</a></li>
                     {% empty %}
@@ -23,6 +21,7 @@
                 <ul class="list-unstyled text-small">
                     <li><a class="text-muted text-decoration-none" href="{% url 'catalog:contacts' %}">Контакты</a></li>
                     <li><a class="text-muted text-decoration-none" href="{% url 'catalog:product_create' %}">Добавить товар</a></li>
+                    <li><a class="text-muted text-decoration-none" href="{% url 'blog:blog_list' %}">Блог</a></li>
                 </ul>
             </div>
         </div>

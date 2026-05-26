@@ -1,14 +1,13 @@
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from catalog.models import Product, Category
 from catalog.forms import ProductForm
 
 
 class HomeListView(ListView):
-    """
-    Главная страница со списком товаров
-    """
+    """Главная страница - доступна всем"""
     model = Product
     template_name = 'catalog/home.html'
     context_object_name = 'products'
@@ -25,9 +24,7 @@ class HomeListView(ListView):
 
 
 class ProductDetailView(DetailView):
-    """
-    Детальная страница товара
-    """
+    """Детальная страница товара - доступна всем"""
     model = Product
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
@@ -35,33 +32,26 @@ class ProductDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = self.object.name
+        context['categories'] = Category.objects.all()
         if self.object.category:
             context['similar_products'] = self.object.category.products.exclude(
                 id=self.object.id
             )[:3]
-        context['categories'] = Category.objects.all()
         return context
 
 
-class ProductCreateView(CreateView):
-    """
-    Создание нового товара
-    """
+class ProductCreateView(LoginRequiredMixin, CreateView):
+    """Создание товара - только для авторизованных пользователей"""
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
     success_url = reverse_lazy('catalog:home')
+    login_url = 'users:login'
 
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(self.request, f'✅ Товар "{self.object.name}" успешно создан!')
         return response
-
-    def form_invalid(self, form):
-        for field, errors in form.errors.items():
-            for error in errors:
-                messages.error(self.request, f'❌ Ошибка в поле "{field}": {error}')
-        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -71,13 +61,12 @@ class ProductCreateView(CreateView):
         return context
 
 
-class ProductUpdateView(UpdateView):
-    """
-    Редактирование товара
-    """
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
+    """Редактирование товара - только для авторизованных пользователей"""
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
+    login_url = 'users:login'
 
     def get_success_url(self):
         return reverse_lazy('catalog:product_detail', args=[self.object.pk])
@@ -87,12 +76,6 @@ class ProductUpdateView(UpdateView):
         messages.success(self.request, f'✅ Товар "{self.object.name}" успешно обновлен!')
         return response
 
-    def form_invalid(self, form):
-        for field, errors in form.errors.items():
-            for error in errors:
-                messages.error(self.request, f'❌ Ошибка в поле "{field}": {error}')
-        return super().form_invalid(form)
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Редактирование товара'
@@ -101,13 +84,12 @@ class ProductUpdateView(UpdateView):
         return context
 
 
-class ProductDeleteView(DeleteView):
-    """
-    Удаление товара
-    """
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
+    """Удаление товара - только для авторизованных пользователей"""
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
     success_url = reverse_lazy('catalog:home')
+    login_url = 'users:login'
 
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -121,9 +103,7 @@ class ProductDeleteView(DeleteView):
 
 
 class ContactsView(TemplateView):
-    """
-    Страница контактов
-    """
+    """Страница контактов - доступна всем"""
     template_name = 'catalog/contacts.html'
 
     def get_context_data(self, **kwargs):
@@ -154,9 +134,7 @@ class ContactsView(TemplateView):
 
 
 class CategoryProductsView(ListView):
-    """
-    Товары по категории
-    """
+    """Товары по категории - доступна всем"""
     model = Product
     template_name = 'catalog/category_products.html'
     context_object_name = 'products'

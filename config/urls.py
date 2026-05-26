@@ -7,8 +7,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Приложение catalog
     path('', include('catalog.urls')),
-    # Приложение blog (все URL начинаются с blogs/)
+    # Приложение blog
     path('blogs/', include('blog.urls')),
+    # Приложение users
+    path('users/', include('users.urls')),
 ]
 
 # Добавляем поддержку медиафайлов в режиме отладки

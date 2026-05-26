@@ -1,0 +1,59 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-body text-center">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="{{ user.email }}" class="rounded-circle img-fluid mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                        <span class="display-1 text-muted">👤</span>
+                    </div>
+                {% endif %}
+                <h4>{{ user.get_full_name }}</h4>
+                <p class="text-muted">{{ user.email }}</p>
+                <a href="{% url 'users:profile_edit' %}" class="btn btn-outline-primary">✏️ Редактировать профиль</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Информация о пользователе</h4>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th style="width: 30%">Email:</th>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Имя:</th>
+                        <td>{{ user.first_name|default:"Не указано" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Фамилия:</th>
+                        <td>{{ user.last_name|default:"Не указано" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Телефон:</th>
+                        <td>{{ user.phone_number|default:"Не указан" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Страна:</th>
+                        <td>{{ user.country|default:"Не указана" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Дата регистрации:</th>
+                        <td>{{ user.date_joined|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -11,7 +11,13 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ['name', 'description', 'image', 'category', 'price']
+        fields = ['name', 'description', 'image', 'category', 'price', 'status']
+        widgets = {
+            'status': forms.Select(attrs={
+                'class': 'form-select',
+                'style': 'border-radius: 8px; padding: 10px;'
+            }),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

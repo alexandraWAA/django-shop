@@ -8,9 +8,11 @@
         <h1 class="display-5">Skystore</h1>
         <p class="lead">Отличное место для покупки товаров</p>
     </div>
-    <a href="{% url 'catalog:product_create' %}" class="btn btn-success btn-lg">
-        ➕ Добавить товар
-    </a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'catalog:product_create' %}" class="btn btn-success btn-lg">
+            ➕ Добавить товар
+        </a>
+    {% endif %}
 </div>
 
 <div class="row">
@@ -25,7 +27,14 @@
                 </div>
             {% endif %}
             <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ product.name }}</h5>
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    {% if product.status == 'published' %}
+                        <span class="badge bg-success">Опубликован</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Черновик</span>
+                    {% endif %}
+                </div>
                 <p class="card-text text-muted small">
                     Категория: {{ product.category.name|default:"Без категории" }}
                 </p>
@@ -35,13 +44,20 @@
                     <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-outline-primary">
                         Подробнее
                     </a>
-                    <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-outline-secondary">
-                        ✏️
-                    </a>
-                    <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-outline-danger">
-                        🗑️
-                    </a>
+                    {% if product.can_edit user %}
+                        <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-outline-secondary">
+                            ✏️
+                        </a>
+                    {% endif %}
+                    {% if product.can_delete user %}
+                        <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-outline-danger">
+                            🗑️
+                        </a>
+                    {% endif %}
                 </div>
+            </div>
+            <div class="card-footer text-muted small">
+                Владелец: {{ product.owner.email|default:"Не указан" }}
             </div>
         </div>
     </div>
@@ -49,7 +65,11 @@
     <div class="col-12">
         <div class="alert alert-info text-center">
             <h4>Товаров пока нет</h4>
-            <a href="{% url 'catalog:product_create' %}" class="btn btn-primary">➕ Добавить первый товар</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'catalog:product_create' %}" class="btn btn-primary">➕ Добавить первый товар</a>
+            {% else %}
+                <a href="{% url 'users:login' %}" class="btn btn-primary">🔐 Войдите, чтобы добавить товар</a>
+            {% endif %}
         </div>
     </div>
     {% endfor %}

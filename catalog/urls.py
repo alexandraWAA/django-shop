@@ -23,6 +23,9 @@ urlpatterns = [
     # Страница контактов
     path('contacts/', views.ContactsView.as_view(), name='contacts'),
 
-    # Товары по категории
+    # Товары по категории (с кешированием через сервис)
     path('category/<int:pk>/', views.CategoryProductsView.as_view(), name='category_products'),
+
+    # Очистка кеша (только для суперпользователей)
+    path('clear-cache/', views.clear_cache_view, name='clear_cache'),
 ]

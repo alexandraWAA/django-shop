@@ -2,9 +2,14 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
+from django.shortcuts import redirect, get_object_or_404
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.views.decorators.vary import vary_on_headers
 from catalog.models import Product, Category
 from catalog.forms import ProductForm
+from catalog.services import get_products_by_category, get_product_detail, clear_product_cache
 
 
 class HomeListView(ListView):
@@ -26,21 +31,37 @@ class HomeListView(ListView):
 
 
 class ProductDetailView(DetailView):
-    """Детальная страница товара"""
+    """
+    Детальная страница товара с кешированием
+    """
     model = Product
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
 
+    def get_object(self, queryset=None):
+        """
+        Получаем объект через сервисную функцию с кешированием
+        """
+        product_id = self.kwargs.get('pk')
+        return get_product_detail(product_id, use_cache=True)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = self.object.name
+        product = self.object
+
+        if product:
+            context['title'] = product.name
+            context['can_edit'] = product.can_edit(self.request.user)
+            context['can_delete'] = product.can_delete(self.request.user)
+
+            if product.category:
+                # Используем сервисную функцию для похожих товаров
+                category_data = get_products_by_category(product.category.pk)
+                if category_data:
+                    similar = category_data['products'].exclude(id=product.id)[:3]
+                    context['similar_products'] = similar
+
         context['categories'] = Category.objects.all()
-        context['can_edit'] = self.object.can_edit(self.request.user)
-        context['can_delete'] = self.object.can_delete(self.request.user)
-        if self.object.category:
-            context['similar_products'] = self.object.category.products.filter(
-                status=Product.PUBLISHED
-            ).exclude(id=self.object.id)[:3]
         return context
 
 
@@ -95,6 +116,8 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        # Очищаем кеш после обновления
+        clear_product_cache(self.object.pk, self.object.category.pk if self.object.category else None)
         messages.success(self.request, f'✅ Товар "{self.object.name}" успешно обновлен!')
         return response
 
@@ -131,8 +154,12 @@ class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         obj = self.get_object()
+        category_id = obj.category.pk if obj.category else None
+        result = super().delete(request, *args, **kwargs)
+        # Очищаем кеш после удаления
+        clear_product_cache(obj.pk, category_id)
         messages.success(request, f'✅ Товар "{obj.name}" успешно удален!')
-        return super().delete(request, *args, **kwargs)
+        return result
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -172,22 +199,59 @@ class ContactsView(TemplateView):
 
 
 class CategoryProductsView(ListView):
-    """Товары по категории - только опубликованные"""
+    """
+    Товары по категории с использованием сервисной функции и кеширования
+    """
     model = Product
     template_name = 'catalog/category_products.html'
     context_object_name = 'products'
 
+    def dispatch(self, request, *args, **kwargs):
+        """Получаем данные через сервисную функцию"""
+        self.category_id = self.kwargs.get('pk')
+        category_data = get_products_by_category(self.category_id)
+
+        if category_data is None:
+            from django.http import Http404
+            raise Http404('Категория не найдена')
+
+        self.category = category_data['category']
+        self.products_queryset = category_data['products']
+
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
-        self.category = Category.objects.get(pk=self.kwargs['pk'])
-        return self.category.products.filter(status=Product.PUBLISHED)
+        """Возвращаем предзагруженные продукты"""
+        return self.products_queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['category'] = self.category
         context['title'] = f'Категория: {self.category.name}'
         context['categories'] = Category.objects.all()
+
+        # Добавляем информацию о кеше для отладки
+        cache_key = f'category_{self.category_id}'
+        context['is_cached'] = cache.has_key(cache_key)
+
         return context
 
 
-# Добавляем необходимый импорт
-from django.shortcuts import redirect
+# Дополнительное представление для сброса кеша (для администрирования)
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+
+@csrf_exempt
+def clear_cache_view(request):
+    """
+    Эндпоинт для очистки кеша (только для суперпользователей)
+    """
+    if not request.user.is_superuser:
+        return JsonResponse({'error': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'POST':
+        cache.clear()
+        return JsonResponse({'message': 'Кеш успешно очищен'})
+
+    return JsonResponse({'error': 'Метод не разрешен'}, status=405)

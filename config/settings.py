@@ -28,7 +28,7 @@ INSTALLED_APPS = [
     # Local apps
     'catalog',
     'blog',
-    'users',  # НОВОЕ приложение для работы с пользователями
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -100,15 +100,43 @@ LOGIN_REDIRECT_URL = 'catalog:home'
 LOGOUT_REDIRECT_URL = 'catalog:home'
 
 # Email settings (для отправки писем)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # или ваш SMTP сервер
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Для разработки
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+# DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Для разработки можно использовать консольный бэкенд
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# ============================================
+# НАСТРОЙКИ REDIS ДЛЯ КЕШИРОВАНИЯ
+# ============================================
+
+# Настройки кеша
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'PASSWORD': os.getenv('REDIS_PASSWORD', ''),
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+            'RETRY_ON_TIMEOUT': True,
+        },
+        'KEY_PREFIX': 'skystore',
+        'TIMEOUT': 300,  # Время жизни кеша по умолчанию: 5 минут
+    }
+}
+
+# Сессии в Redis (опционально)
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# Кеширование в шаблонах (опционально)
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 300
+CACHE_MIDDLEWARE_KEY_PREFIX = 'skystore'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
